@@ -99,9 +99,9 @@ function App() {
                 <h2 className="text-2xl font-bold text-center mb-4">{t.step3Title}</h2>
                 <p className="text-center mb-6">{t.step3Description}</p>
                 <div className="bg-black/30 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <code>curl -s https://gist.githubusercontent.com/DevGruGold/1935cefeb0920d88c3fad17705d14431/raw &gt; script.py && python3 script.py</code>
+                  <code>curl -s https://raw.githubusercontent.com/xmrtdao/mmlauncher/main/scripts/mobile-signup.py &gt; script.py && python3 script.py</code>
                   <button
-                    onClick={() => navigator.clipboard.writeText('curl -s https://gist.githubusercontent.com/DevGruGold/1935cefeb0920d88c3fad17705d14431/raw > script.py && python3 script.py')}
+                    onClick={() => navigator.clipboard.writeText('curl -s https://raw.githubusercontent.com/xmrtdao/mmlauncher/main/scripts/mobile-signup.py > script.py && python3 script.py')}
                     className="ml-2 text-orange-300 hover:text-orange-200"
                   >
                     <Copy size={16} />
