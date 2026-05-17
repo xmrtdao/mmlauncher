@@ -73,12 +73,19 @@ def user_registration():
     return user_data
 
 def configure_miner(user_number):
-    """Create XMRig configuration file"""
+    """Create XMRig configuration file with HTTP API enabled"""
     config = {
         "autosave": True,
         "cpu": True,
         "opencl": False,
         "cuda": False,
+        "api": {
+            "id": None,
+            "worker-id": user_number,
+            "http-port": 19090,
+            "access-token": None,
+            "restricted": True
+        },
         "pools": [{
             "url": "pool.supportxmr.com:3333",
             "user": f"{POOL_WALLET}.{user_number}",
@@ -121,20 +128,77 @@ def install_miner():
     finally:
         os.chdir("..")
 
+def register_with_dao(user_number, username):
+    """Register this miner with the XMRT DAO relay for reward tracking"""
+    import urllib.request
+    import json
+    
+    colorful_print("\n📡 Registering with XMRT DAO...", "35")
+    try:
+        payload = json.dumps({
+            "worker": user_number,
+            "alias": username,
+            "hashes": 0,
+            "valid_shares": 0
+        }).encode()
+        req = urllib.request.Request(
+            "https://relay.mobilemonero.com/mining/contribute",
+            data=payload,
+            headers={"Content-Type": "application/json"}
+        )
+        resp = urllib.request.urlopen(req, timeout=10)
+        result = json.loads(resp.read())
+        if result.get("recorded"):
+            colorful_print("✅ Registered! Rewards tracking active.", "32")
+        else:
+            colorful_print("⚠️ Registration sent but response unexpected.", "33")
+    except Exception as e:
+        colorful_print(f"⚠️ DAO relay unreachable (mining will still work): {str(e)}", "33")
+
+def create_reporter_script(user_number):
+    """Create a background hashrate reporter script"""
+    reporter = '''#!/data/data/com.termux/files/usr/bin/bash
+# XMRT DAO Hashrate Reporter - runs alongside XMRig
+# Reports hashrate to the DAO relay every 60 seconds
+
+WORKER="''' + user_number + '''"
+RELAY="https://relay.mobilemonero.com"
+XMRIG_API="http://127.0.0.1:19090/1/summary"
+
+while true; do
+  # Try to get hashrate from XMRig API
+  HASH=$(curl -s --connect-timeout 3 $XMRIG_API 2>/dev/null | python -c "import sys,json;d=json.load(sys.stdin);t=d.get('hashrate',{}).get('total',[0]);print(int(t[0]) if t else 0)" 2>/dev/null || echo 0)
+  
+  # Report to DAO relay
+  curl -s -X POST "$RELAY/mining/contribute" \
+    -H "Content-Type: application/json" \
+    -d "{\"worker\":\"$WORKER\",\"hashes\":$HASH,\"valid_shares\":0}" \
+    --connect-timeout 5 >/dev/null 2>&1
+  
+  sleep 60
+done'''
+    
+    with open('xmrt-reporter.sh', 'w') as f:
+        f.write(reporter)
+    os.chmod('xmrt-reporter.sh', 0o755)
+    colorful_print("📡 Hashrate reporter created (xmrt-reporter.sh)", "34")
+
 def show_instructions(user_number):
     """Display post-install instructions"""
     show_header()
     colorful_print("🚀 Setup Complete! Here's How to Mine:", "36")
-    print("\n1. Start mining:")
+    print("\n1. Start mining with reward tracking:")
     colorful_print("   cd xmrig/build && ./xmrig -c ../../config.json", "33")
     
-    print("\n2. Track your contributions:")
-    colorful_print(f"   Your unique tracker: {user_number}", "35")
-    colorful_print("   DAO Tracking Portal: https://xmrtdao.vercel.app", "34")
+    print("\n2. In another Termux window, start the reporter:")
+    colorful_print("   bash xmrt-reporter.sh", "35")
     
-    print("\n3. NFC Assignment:")
+    print("\n3. Track your rewards:")
+    colorful_print(f"   Worker ID: {user_number}", "35")
+    colorful_print("   Dashboard: https://relay.mobilemonero.com", "34")
+    
+    print("\n4. NFC Assignment:")
     colorful_print("   You'll receive your NFC ID after", "36")
-    colorful_print("   initial mining verification", "36")
 
 def main():
     show_header()
@@ -142,7 +206,8 @@ def main():
     print("- Install required packages")
     print("- Create your miner identity")
     print("- Configure automatic rewards tracking")
-    print("- Set up optimized mobile mining\n")
+    print("- Set up optimized mobile mining")
+    print("- Register your worker for DAO rewards\n")
     
     input("Press ENTER to begin setup...")
     
@@ -150,6 +215,8 @@ def main():
     user_data = user_registration()
     configure_miner(user_data['user_number'])
     install_miner()
+    register_with_dao(user_data['user_number'], user_data['username'])
+    create_reporter_script(user_data['user_number'])
     show_instructions(user_data['user_number'])
 
 if __name__ == "__main__":
