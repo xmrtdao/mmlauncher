@@ -158,17 +158,12 @@ def show_instructions(user_data):
     print("\n3. Track your rewards on the fleet dashboard:")
     colorful_print("   https://relay.mobilemonero.com", "34")
 
-    print("\n4. Run the share reporter (so the DAO tracks your valid shares):")
-    colorful_print("   curl -o xmrig-report.py -L https://raw.githubusercontent.com/xmrtdao/mmlauncher/main/scripts/xmrig-report.py", "33")
-    colorful_print("   python3 xmrig-report.py --daemon --worker " + user_data['username'] + " &&", "33")
-
-    print("\n5. Your Fleet Identity:")
+    print("\n4. Your Fleet Identity:")
     colorful_print(f"   Worker Name: {user_data['username']}", "35")
     colorful_print(f"   Worker ID:   {user_data['user_number']}", "35")
 
-    print("\n6. To auto-start on boot, add to ~/.bashrc:")
+    print("\n5. To auto-start on boot, add to ~/.bashrc:")
     colorful_print('   echo "cd ~/mobile-monero && ./xmrig/build/xmrig -c config.json &" >> ~/.bashrc', "33")
-    colorful_print('   echo "python3 xmrig-report.py --daemon --worker ' + user_data['username'] + ' &" >> ~/.bashrc', "33")
 
 def main():
     show_header()
