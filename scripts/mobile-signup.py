@@ -12,14 +12,15 @@ from collections import OrderedDict
 
 # ASCII Art and Branding
 XMRT_ASCII = r"""
-██╗ ██╗███╗ ███╗██████╗ ████████╗
-╚██╗██╔╝████╗ ████║██╔══██╗╚══██╔══╝
- ╚███╔╝ ██╔████╔██║██████╔╝ ██║
- ██╔██╗ ██║╚██╔╝██║██╔══██╗ ██║
-██╔╝ ██╗██║ ╚═╝ ██║██║ ██║ ██║
-╚═╝ ╚═╝╚═╝ ╚═╝╚═╝ ╚═╝ ╚═╝
-D E C E N T R A L I Z E D   A U T O N O M O U S   O R G A N I Z A T I O N
+██╗  ██╗███╗   ███╗██████╗  ████████╗
+╚██╗██╔╝████╗ ████║██╔══██╗ ╚══██╔══╝
+ ╚███╔╝ ██╔████╔██║██████╔╝    ██║
+ ██╔██╗ ██║╚██╔╝██║██╔══██╗    ██║
+██╔╝ ██╗██║ ╚═╝ ██║██║  ██║    ██║
+╚═╝ ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝    ╚═╝
 """
+
+TAGLINE = "D E C E N T R A L I Z E D   A U T O N O M O U S   O R G A N I Z A T I O N"
 
 POOL_WALLET = "46UxNFuGM2E3UwmZWWJicaRPoRwqwW4byQkaTHkX8yPcVihp91qAVtSFipWUGJJUyTXgzSqxzDQtNLf2bsp2DX2qCCgC5mg"
 
@@ -30,9 +31,12 @@ def colorful_print(text, color_code):
 def show_header():
     """Display branded welcome screen"""
     os.system('clear')
-    colorful_print(XMRT_ASCII, "36")
-    colorful_print("\nWelcome to XMRT DAO Mobile Mining Initiative\n", "33")
-    colorful_print("="*60, "34")
+    # XMRT logo in orange/red
+    colorful_print(XMRT_ASCII, "31")
+    # Tagline in cyan
+    colorful_print("\n" + TAGLINE + "\n", "36")
+    # Divider line
+    print("\033[34m" + "─" * 54 + "\033[0m")
     print()
 
 def install_dependencies():
