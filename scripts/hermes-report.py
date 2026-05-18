@@ -27,6 +27,14 @@ XMRIG_API = "http://127.0.0.1:19090/1/summary"
 RELAY_URL = os.environ.get("RELAY_URL", "https://relay.mobilemonero.com")
 WORKER_NAME = os.environ.get("WORKER_NAME", None)
 
+# Cloudflare-friendly headers
+HEADERS = {
+    "Content-Type": "application/json",
+    "User-Agent": "HermesAgent/1.0 (Termux; Android; XMRT-DAO)",
+    "Accept": "application/json",
+    "X-Forwarded-For": "",  # Let Cloudflare see real IP
+}
+
 def fetch_xmrig():
     """Get current stats from local XMRig"""
     try:
@@ -49,13 +57,19 @@ def report_to_relay(worker, hashes, shares):
         req = urllib.request.Request(
             f"{RELAY_URL}/mining/contribute",
             data=payload,
-            headers={"Content-Type": "application/json"},
+            headers=HEADERS,
             method="POST"
         )
         with urllib.request.urlopen(req, timeout=15) as resp:
             result = json.loads(resp.read().decode())
             print(f"[Hermes] Reported: {worker} - {hashes}H/s, {shares} shares ✅")
             return result
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        print(f"[Hermes] Relay HTTP {e.code}: {body}")
+        if e.code == 403:
+            print(f"[Hermes] 💡 Try using the direct tunnel URL or check your internet connection")
+        return None
     except Exception as e:
         print(f"[Hermes] Relay report failed: {e}")
         return None
